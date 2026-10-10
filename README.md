@@ -1,6 +1,6 @@
 # In-context SARSA and Actor-Critic
 
-Experiment code for our paper **Transformers Provably Implement In-Context Reinforcement Learning with Policy Improvement**.
+This repository provides experiment code for our paper **Transformers Provably Implement In-Context Reinforcement Learning with Policy Improvement**.
 
 Install the required packages:
 
@@ -16,9 +16,9 @@ Checkpoints, results, and figures are saved in `runs/`. Saved results are reused
 
 Training and evaluation were conducted on a MacBook Pro with the following specifications:
 
-- Chip: Apple M5
-- Unified memory: 16 GB
+- Apple M5 chip
+- 16 GB Unified memory
 
-Total training time: Approximately 15 minutes (SARSA, Actor-Critic, and MountainCar combined).
+Total training time: Approximately 15 minutes.
 
-Total evaluation time: Approximately 7 minutes (SARSA and Actor-Critic combined).
+Total evaluation time: Approximately 7 minutes.
