@@ -101,7 +101,7 @@ def evaluate(model, config, num_tasks=100, updates=None, eval_every=10,
     Historical AC evaluates consecutive, independently initialized transformer
     and teacher prompts on the same MDP; it does not pair their initial weights.
     """
-    from paper_protocol import PaperTasks, PaperPrompt
+    from protocol import TaskSampler, TrajectoryPrompt
     from train import make_model
     if config["family"] != "random":
         raise ValueError("MountainCar reports training and parameter recovery only")
@@ -125,15 +125,15 @@ def evaluate(model, config, num_tasks=100, updates=None, eval_every=10,
             for _ in range(config["tasks"]):
                 torch.rand((config["m"] + config["d"], 1))
         for i, task_seed in enumerate(task_seeds):
-            stream = PaperTasks(c, seed=task_seed, feature_seed=config["seed"] + i,
-                                value_seed=config["seed"] + i)
+            stream = TaskSampler(c, seed=task_seed, feature_seed=config["seed"] + i,
+                                 value_seed=config["seed"] + i)
             task = stream.draw(random_init=False)
             for baseline in ("oracle", "random"):
                 results[baseline + "_returns"][i] = paper_rollout(
                     task, None, np.random.default_rng(task_seed + 1), episodes, eval_horizon, baseline)
             for key, predictor in (("tf_returns", model), ("teacher_returns", None)):
                 rng = np.random.RandomState(task_seed + 100)
-                prompt = PaperPrompt(task, c, rng, random_init=task.algorithm == "ac")
+                prompt = TrajectoryPrompt(task, c, rng, random_init=task.algorithm == "ac")
                 for t in range(updates + 1):
                     if t in checkpoints:
                         j = checkpoints.index(t)

@@ -19,6 +19,6 @@ Training and evaluation were conducted on a MacBook Pro with the following speci
 - Apple M5 chip
 - 16 GB Unified memory
 
-Total training time: Approximately 15 minutes.
+Total training time: Approximately 28 minutes.
 
-Total evaluation time: Approximately 7 minutes.
+Total evaluation time: Approximately 5 minutes.

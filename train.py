@@ -8,7 +8,7 @@ import numpy as np
 import torch
 
 from model import Transformer, teacher_update
-from paper_protocol import PROTOCOL, PaperTasks, PaperPrompt
+from protocol import PROTOCOL, TaskSampler, TrajectoryPrompt
 
 
 EXPERIMENTS = ("sarsa", "ac", "mountaincar", "relu", "relu2", "softmax", "softmax2", "ac-raw")
@@ -61,7 +61,7 @@ def train(config, out):
     out.mkdir(parents=True, exist_ok=True)
     (out / "config.json").write_text(json.dumps(config, indent=2) + "\n")
     torch.manual_seed(config["seed"])
-    tasks_stream = PaperTasks(config)
+    tasks_stream = TaskSampler(config)
     model = make_model(config)
     optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"], weight_decay=0)
     scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=config["decay"])
@@ -69,7 +69,7 @@ def train(config, out):
     checkpoint_path = None
     for task_index in range(tasks):
         task = tasks_stream.draw()
-        prompt = PaperPrompt(task, config, tasks_stream.rng)
+        prompt = TrajectoryPrompt(task, config, tasks_stream.rng)
         total_loss = 0.0
         for window_index in range(horizon // n - 1):
             H, teacher_H = prompt.H, prompt.teacher_H
@@ -138,21 +138,18 @@ def plot_training(checkpoint, show=False, output_dir=None):
                  "pdf.fonttype": 42, "ps.fonttype": 42}
         with plt.rc_context(style):
             P, V = model.P[0].detach().numpy(), model.V[0].detach().numpy()
-            blocks = [P, V, P[:73, 73:], V[74:, :73]]
-            titles = [r"(a) $\mathbf{P}$", r"(b) $\mathbf{V}$",
-                      r"(c) $\mathbf{P}_{12}$", r"(d) $\bar{\mathbf{V}}_{21}$"]
-            fig, axes = plt.subplots(2, 2, figsize=(7, 5.9), layout="constrained")
-            for ax, block, title in zip(axes.flat, blocks, titles):
-                limit = max(float(np.abs(block).max()), 1e-8)
-                im = ax.imshow(block, cmap="viridis", vmin=-limit, vmax=limit,
-                               interpolation="none", aspect="auto", rasterized=True)
+            fig, axes = plt.subplots(1, 2, figsize=(7, 3.2), layout="constrained")
+            for ax, matrix, title in zip(axes, (P, V), (r"(a) $\mathbf{P}$", r"(b) $\mathbf{V}$")):
+                limit = max(float(np.abs(matrix).max()), 1e-8)
+                im = ax.imshow(matrix, cmap="viridis", vmin=-limit, vmax=limit,
+                               interpolation="none", aspect="equal", rasterized=True)
                 ax.set_title(title, fontsize=11)
                 ax.set(xlabel="Column", ylabel="Row")
                 fig.colorbar(im, ax=ax, fraction=.047, pad=.035)
             save(fig, "mountaincar_parameters", dpi=300)
             fig, ax = plt.subplots(figsize=(6.2, 2.7), layout="constrained")
             ax.semilogy(tasks[indices], losses[indices], color="#2563b0", linewidth=.9)
-            ax.set(xlabel="Training tasks processed", ylabel="Mean squared prediction error",
+            ax.set(xlabel="Training tasks processed", ylabel="Training loss",
                    xlim=(0, completed))
             ax.grid(True, which="major", color="0.88", linewidth=.5)
             save(fig, "mountaincar_loss", dpi=300)
@@ -161,14 +158,14 @@ def plot_training(checkpoint, show=False, output_dir=None):
     label = "Actor-Critic" if config["algorithm"] == "ac" else "SARSA"
     suffix = "_AC" if config["algorithm"] == "ac" else ""
     fig, ax = plt.subplots(figsize=(6, 4))
-    ax.plot(np.arange(len(indices)) * 50, losses[indices])
+    ax.semilogy(np.arange(len(indices)) * 50, losses[indices])
     ax.set_xlabel("Iteration", fontsize=16)
     ax.set_ylabel("Loss", fontsize=16)
     ax.set_title(f"{label} Transformer training loss", fontsize=18)
-    ax.set_ylim(0, 1e-3)
+    ax.set_ylim(5e-9, 2e-1)
     ax.tick_params(axis="both", labelsize=14)
     fig.tight_layout()
-    save(fig, "loss" + suffix, dpi=100, tight=False)
+    save(fig, "loss" + suffix + "_log", dpi=100, tight=False)
     for head, (P, V) in enumerate(zip(model.P, model.V)):
         tag = "last" if len(model.P) == 1 else f"head{head + 1}"
         for name, matrix in (("P", P), ("V", V)):

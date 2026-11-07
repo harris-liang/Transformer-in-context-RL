@@ -8,7 +8,7 @@ from environments import MountainCarTask, TabularTask
 PROTOCOL = "paper-v1"
 
 
-class PaperTasks:
+class TaskSampler:
     def __init__(self, config, seed=None, feature_seed=None, value_seed=None):
         self.config = config
         seed = config["seed"] if seed is None else seed
@@ -80,7 +80,7 @@ def sample_action(task, state, theta, rng):
     return int(rng.choice(np.flatnonzero(np.isclose(q, q.max()))))
 
 
-class PaperPrompt:
+class TrajectoryPrompt:
     def __init__(self, task, config, rng, random_init=True):
         self.task, self.config, self.rng = task, config, rng
         self.theta = (2 * torch.rand((task.d + task.m, 1)) - 1 if random_init
