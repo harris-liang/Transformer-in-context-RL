@@ -1,0 +1,23 @@
+{
+  "protocol": "paper-v1",
+  "experiment": "ac-raw",
+  "algorithm": "ac",
+  "family": "random",
+  "d": 9,
+  "m": 36,
+  "nS": 9,
+  "nA": 4,
+  "gamma": 0.5,
+  "epsilon": 0.1,
+  "window": 20,
+  "horizon": 1000,
+  "tasks": 15000,
+  "seed": 2,
+  "alpha": 0.2,
+  "beta": 0.8,
+  "lr": 0.001,
+  "decay": 0.99,
+  "activation": "linear",
+  "heads": 1,
+  "raw": true
+}

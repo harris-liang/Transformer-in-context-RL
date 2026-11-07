@@ -1,0 +1,15 @@
+{
+  "training_seconds": {
+    "sarsa": 120.494060916,
+    "ac": 158.80857020899998,
+    "mountaincar": 420.126502917,
+    "ac-raw": 480.13925133399994,
+    "ac-control": 478.79370645799986
+  },
+  "evaluation_seconds": {
+    "sarsa": 7.618186833999971,
+    "ac": 311.7923739590001
+  },
+  "total_training_seconds": 1658.3620918339998,
+  "total_evaluation_seconds": 319.41056079300006
+}
